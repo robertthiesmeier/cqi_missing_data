@@ -1,0 +1,328 @@
+
+<html>
+<head>
+<title>Multiple imputation for systematically missing effect modifiers in individual participant data meta-analysis</title>
+<meta http-equiv="Content-type" content="text/html; charset=utf8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css">
+BODY{background-color: white;
+    font-family: monaco, "courier new", monospace;
+     color: #000000}
+.input, .result, .error{font-weight: bold}
+.input {color: #CC6600}
+.result{color: #000099}
+.error{color: #dd0000}
+</style>
+</head>
+<body>
+<h2>Multiple imputation for systematically missing effect modifiers in individual participant data meta-analysis</h2>
+<pre>
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <span class=result>applied_example_cqi</span>
+<span class=result>       </span>log:  <span class=result>/Users/robert/Desktop/manuscript_applied_example/applied_example_cqi.smcl</span>
+<span class=result>  </span>log type:  <span class=result>smcl</span>
+<span class=result> </span>opened on:  <span class=result>16 May 2024, 09:34:11</span>
+<br><br>
+<span class=input>. </span>
+<span class=input>. // Install CQI </span>
+<span class=input>. net describe "http://www.stats4life.se/stata/mi_impute_cqi"</span>
+<br><br>
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+package <span class=result>mi_impute_cqi</span> from http://www.stats4life.se/stata
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+<br><br>
+<span class=result>TITLE</span>
+      'mi impute cqi': Conditional Quantile imputation
+<br><br>
+<span class=result>DESCRIPTION/AUTHOR(S)</span>
+      
+      
+      Requires: Stata version 18
+      
+      Distribution-Date: 2023-12-2
+      
+      Authors: Nicola Orsini and Robert Thiesmeier, Karolinska Institutet
+      Support: nicola.orsini@ki.se
+      
+<br><br>
+<span class=result>INSTALLATION FILES</span>                        (type <span class=result>net install</span> <span class=result>mi_impute_cqi</span>)
+      m/mi_impute_cqi.sthlp
+      m/mi_impute_cmd_cqi_parse.ado
+      m/mi_impute_cmd_cqi_init.ado
+      m/mi_impute_cmd_cqi.ado
+      m/mi_impute_cmd_cqi_return.ado
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+<br><br>
+<span class=input>. net install mi_impute_cqi</span>
+<span class=result>checking </span><span class=result>mi_impute_cqi</span><span class=result> consistency and verifying not already installed...</span>
+<span class=result>all files already exist and are up to date.</span>
+<br><br>
+<span class=input>. </span>
+<span class=input>. // Check for mvmeta</span>
+<span class=input>. quietly cap which mvmeta</span>
+<br><br>
+<span class=input>. if _rc != 0 qui scc install mvmeta </span>
+<br><br>
+<span class=input>. </span>
+<span class=input>. // Load IPD data for postoperative radiotherapy on survival at different stages of the disease</span>
+<span class=input>. use "http://fmwww.bc.edu/repec/bocode/i/ipdmetan_example.dta", clear</span>
+<br><br>
+<span class=input>. </span>
+<span class=input>. // recode variables to be consistent with description in the manuscript</span>
+<span class=input>. recode stage (1=0) (2=1) (3=2), gen(z)</span>
+(1,187 differences between <span class=result>stage</span> and <span class=result>z</span>)
+<br><br>
+<span class=input>. rename trt x </span>
+<br><br>
+<span class=input>. rename tcens time</span>
+<br><br>
+<span class=input>. rename fail outcome </span>
+<br><br>
+<span class=input>. gen zi1 = (z==1)</span>
+<br><br>
+<span class=input>. gen zi2 = (z==2)</span>
+<br><br>
+<span class=input>. gen x_zi1 = x*zi1 </span>
+<br><br>
+<span class=input>. gen x_zi2 = x*zi2 </span>
+<br><br>
+<span class=input>. </span>
+<span class=input>. // Analsysis with only complete studies  </span>
+<span class=input>. preserve</span>
+<br><br>
+<span class=input>. keep if inlist(trialid, 1, 3, 10)!= 1</span>
+(455 observations deleted)
+<br><br>
+<span class=input>. stset time, fail(outcome)</span>
+<br><br>
+Survival-time data settings
+<br><br>
+         Failure event: <span class=result>outcome!=0 &amp; outcome&lt;.</span>
+Observed time interval: <span class=result>(0, time]</span>
+<span class=result>     </span>Exit on or before: <span class=result>failure</span>
+<br><br>
+--------------------------------------------------------------------------
+<span class=result>      1,187</span>  total observations
+<span class=result>          0</span>  exclusions
+--------------------------------------------------------------------------
+<span class=result>      1,187</span>  observations remaining, representing
+<span class=result>        785</span>  failures in single-record/single-failure data
+<span class=result>    766.434</span>  total analysis time at risk and under observation
+                                                At risk from t = <span class=result>        0</span>
+<span class=result>                                     </span>Earliest observed entry t = <span class=result>        0</span>
+<span class=result>                                          </span>Last observed exit t = <span class=result> 5.811862</span>
+<br><br>
+<span class=input>. </span>
+<span class=input>. quietly mvmeta_make, by(trialid) clear names(b V): stcox x zi1 zi2 x_zi1 x_zi2 </span>
+<br><br>
+<span class=input>. mvmeta b V, fixed </span>
+Note: using method <span class=result>fixed</span>
+Note: using variables <span class=result>bx bzi1 bzi2 bx_zi1 bx_zi2</span>
+Note: <span class=result>7</span> observations on <span class=result>5</span> variables
+<br><br>
+Multivariate meta-analysis
+Variance-covariance matrix = <span class=result>(none)</span>
+Method = <span class=result>fixed                                 </span>Number of dimensions    =<span class=result>     5</span>
+<span class=result>                                               </span>Number of observations  =<span class=result>     7</span>
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P&gt;|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+<span class=result>Overall_mean </span>|
+          bx |<span class=result>  -.0046955    .125941    -0.04   0.970    -.2515353    .2421442</span>
+        bzi1 |<span class=result>   .1584711   .1226066     1.29   0.196    -.0818334    .3987757</span>
+        bzi2 |<span class=result>  -.1103261   .1319873    -0.84   0.403    -.3690164    .1483642</span>
+      bx_zi1 |<span class=result>   .0224724   .1741227     0.13   0.897    -.3188018    .3637466</span>
+      bx_zi2 |<span class=result>   .3639466    .181914     2.00   0.045     .0074017    .7204914</span>
+------------------------------------------------------------------------------
+<br><br>
+<span class=input>. </span>
+<span class=input>. testparm bx_zi1 bx_zi2</span>
+<br><br>
+<span class=result> </span>( 1)<span class=result>  </span><span class=result>[Overall_mean]bx_zi1 = 0</span>
+<span class=result> </span>( 2)<span class=result>  [Overall_mean]bx_zi2 = 0</span>
+<br><br>
+           chi2(  2) =<span class=result>    5.00</span>
+         Prob &gt; chi2 =  <span class=result>  0.0823</span>
+<br><br>
+<span class=input>. </span>
+<span class=input>. * display results that are used for Table 3</span>
+<span class=input>. lincom bx , eform cformat(%3.2f)</span>
+<br><br>
+<span class=result> </span>( 1)<span class=result>  </span><span class=result>[Overall_mean]bx = 0</span>
+<br><br>
+------------------------------------------------------------------------------
+             |     exp(b)   Std. err.      z    P&gt;|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         (1) |<span class=result>       1.00       0.13    -0.04   0.970         0.78        1.27</span>
+------------------------------------------------------------------------------
+<br><br>
+<span class=input>. lincom bx + bx_zi1  , eform cformat(%3.2f)</span>
+<br><br>
+<span class=result> </span>( 1)<span class=result>  </span><span class=result>[Overall_mean]bx + [Overall_mean]bx_zi1 = 0</span>
+<br><br>
+------------------------------------------------------------------------------
+             |     exp(b)   Std. err.      z    P&gt;|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         (1) |<span class=result>       1.02       0.12     0.15   0.883         0.80        1.29</span>
+------------------------------------------------------------------------------
+<br><br>
+<span class=input>. lincom bx + bx_zi2 , eform cformat(%3.2f)</span>
+<br><br>
+<span class=result> </span>( 1)<span class=result>  </span><span class=result>[Overall_mean]bx + [Overall_mean]bx_zi2 = 0</span>
+<br><br>
+------------------------------------------------------------------------------
+             |     exp(b)   Std. err.      z    P&gt;|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         (1) |<span class=result>       1.43       0.19     2.73   0.006         1.11        1.85</span>
+------------------------------------------------------------------------------
+<br><br>
+<span class=input>. restore</span>
+<br><br>
+<span class=input>. </span>
+<span class=input>. * Including studies with systematic missing studies </span>
+<span class=input>. mi set wide</span>
+<br><br>
+<span class=input>. mi stset time, fail(outcome)</span>
+<br><br>
+Survival-time data settings
+<br><br>
+         Failure event: <span class=result>outcome!=0 &amp; outcome&lt;.</span>
+Observed time interval: <span class=result>(0, time]</span>
+<span class=result>     </span>Exit on or before: <span class=result>failure</span>
+<br><br>
+--------------------------------------------------------------------------
+<span class=result>      1,642</span>  total observations
+<span class=result>          0</span>  exclusions
+--------------------------------------------------------------------------
+<span class=result>      1,642</span>  observations remaining, representing
+<span class=result>      1,082</span>  failures in single-record/single-failure data
+<span class=result>  1,025.389</span>  total analysis time at risk and under observation
+                                                At risk from t = <span class=result>        0</span>
+<span class=result>                                     </span>Earliest observed entry t = <span class=result>        0</span>
+<span class=result>                                          </span>Last observed exit t = <span class=result> 5.811862</span>
+<br><br>
+<span class=input>. sts generate ch = na</span>
+<br><br>
+<span class=input>. gen x_ch = x*ch</span>
+<br><br>
+<span class=input>. gen x_d = x*_d </span>
+<br><br>
+<span class=input>. mi register regular x ch _d x_ch x_d </span>
+(variable _d already registered as regular)
+<br><br>
+<span class=input>. mi register imputed z</span>
+<br><br>
+<span class=input>. mi register passive zi1 zi2 x_zi1 x_zi2</span>
+<br><br>
+<span class=input>. </span>
+<span class=input>. * using CQI</span>
+<span class=input>. mi impute cqi z x _t _d x_ch x_d sex age, add(30) id(trialid) rseed(150524)</span>
+------------------------------------------------------------------
+id               Total            Incomplete        Missing (%)
+------------------------------------------------------------------
+1                176              176               100.0
+2                141              0                 0.0
+3                110              110               100.0
+4                69               0                 0.0
+5                160              0                 0.0
+6                115              0                 0.0
+7                238              0                 0.0
+8                148              0                 0.0
+9                316              0                 0.0
+10               169              169               100.0
+------------------------------------------------------------------
+<br><br>
+Conditional Quantile Imputation             Imputations = <span class=result>      30</span>
+User method <span class=result>cqi</span>                                   added = <span class=result>      30</span>
+Imputed: <i>m</i>=1 through <i>m</i>=30                       updated = <span class=result>       0</span>
+<br><br>
+------------------------------------------------------------------
+                   |               Observations per <i>m</i>             
+                   |----------------------------------------------
+          Variable |   Complete   Incomplete   Imputed |     Total
+-------------------+-----------------------------------+----------
+                 z |<span class=result>       1187          455       455 </span>|<span class=result>      1642</span>
+------------------------------------------------------------------
+(Complete + Incomplete = Total; Imputed is the minimum across <i>m</i>
+ of the number of filled-in observations.)
+<br><br>
+<span class=input>.         quietly mi passive: replace zi1 = (z==1)</span>
+<br><br>
+<span class=input>.         quietly mi passive: replace zi2 = (z==2)</span>
+<br><br>
+<span class=input>.         quietly mi passive: replace x_zi1 = x*zi1 </span>
+<br><br>
+<span class=input>.         quietly mi passive: replace x_zi2 = x*zi2 </span>
+<br><br>
+<span class=input>. </span>
+<span class=input>. quietly mvmeta_make, by(trialid) clear names(b V): mi estimate, post: stcox x zi1 zi2 x_zi1 x_zi2 </span>
+<br><br>
+<span class=input>. mvmeta b V, fixed </span>
+Note: using method <span class=result>fixed</span>
+Note: using variables <span class=result>bx bzi1 bzi2 bx_zi1 bx_zi2</span>
+Note: <span class=result>10</span> observations on <span class=result>5</span> variables
+<br><br>
+Multivariate meta-analysis
+Variance-covariance matrix = <span class=result>(none)</span>
+Method = <span class=result>fixed                                 </span>Number of dimensions    =<span class=result>     5</span>
+<span class=result>                                               </span>Number of observations  =<span class=result>    10</span>
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P&gt;|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+<span class=result>Overall_mean </span>|
+          bx |<span class=result>   .0284935   .1132223     0.25   0.801    -.1934183    .2504052</span>
+        bzi1 |<span class=result>   .1674768   .1118511     1.50   0.134    -.0517473     .386701</span>
+        bzi2 |<span class=result>  -.1053183   .1208164    -0.87   0.383    -.3421141    .1314775</span>
+      bx_zi1 |<span class=result>   .0053963   .1602372     0.03   0.973    -.3086629    .3194555</span>
+      bx_zi2 |<span class=result>   .3440081   .1667291     2.06   0.039     .0172251    .6707912</span>
+------------------------------------------------------------------------------
+<br><br>
+<span class=input>. </span>
+<span class=input>. * display results that are used for Table 3</span>
+<span class=input>. testparm bx_zi1 bx_zi2</span>
+<br><br>
+<span class=result> </span>( 1)<span class=result>  </span><span class=result>[Overall_mean]bx_zi1 = 0</span>
+<span class=result> </span>( 2)<span class=result>  [Overall_mean]bx_zi2 = 0</span>
+<br><br>
+           chi2(  2) =<span class=result>    5.53</span>
+         Prob &gt; chi2 =  <span class=result>  0.0630</span>
+<br><br>
+<span class=input>. lincom bx , eform cformat(%3.2f)</span>
+<br><br>
+<span class=result> </span>( 1)<span class=result>  </span><span class=result>[Overall_mean]bx = 0</span>
+<br><br>
+------------------------------------------------------------------------------
+             |     exp(b)   Std. err.      z    P&gt;|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         (1) |<span class=result>       1.03       0.12     0.25   0.801         0.82        1.28</span>
+------------------------------------------------------------------------------
+<br><br>
+<span class=input>. lincom bx + bx_zi1  , eform cformat(%3.2f)</span>
+<br><br>
+<span class=result> </span>( 1)<span class=result>  </span><span class=result>[Overall_mean]bx + [Overall_mean]bx_zi1 = 0</span>
+<br><br>
+------------------------------------------------------------------------------
+             |     exp(b)   Std. err.      z    P&gt;|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         (1) |<span class=result>       1.03       0.11     0.31   0.757         0.83        1.28</span>
+------------------------------------------------------------------------------
+<br><br>
+<span class=input>. lincom bx + bx_zi2 , eform cformat(%3.2f)</span>
+<br><br>
+<span class=result> </span>( 1)<span class=result>  </span><span class=result>[Overall_mean]bx + [Overall_mean]bx_zi2 = 0</span>
+<br><br>
+------------------------------------------------------------------------------
+             |     exp(b)   Std. err.      z    P&gt;|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         (1) |<span class=result>       1.45       0.17     3.14   0.002         1.15        1.83</span>
+------------------------------------------------------------------------------
+<br><br>
+<span class=input>. log close applied_example_cqi</span>
+<span class=result>      </span>name:  <span class=result>applied_example_cqi</span>
+<span class=result>       </span>log:  <span class=result>/Users/robert/Desktop/manuscript_applied_example/applied_example_cqi.smcl</span>
+<span class=result>  </span>log type:  <span class=result>smcl</span>
+<span class=result> </span>closed on:  <span class=result>16 May 2024, 09:34:21</span>
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+</pre>
+</body>
+</html>
