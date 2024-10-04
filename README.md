@@ -58,7 +58,6 @@ mvmeta b V, fixed
 
 testparm bx_zi1 bx_zi2
 
-* display results that are used for Table 3
 lincom bx , eform cformat(%3.2f)
 lincom bx + bx_zi1  , eform cformat(%3.2f)
 lincom bx + bx_zi2 , eform cformat(%3.2f)
