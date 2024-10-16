@@ -98,6 +98,6 @@ lincom bx , eform cformat(%3.2f)
 lincom bx + bx_zi1  , eform cformat(%3.2f)
 lincom bx + bx_zi2 , eform cformat(%3.2f)
 
-```ruby
+```
 
 In this example, we have shown how to use `mi impute cqi` to impute systematically missing effect modifiers in an IPD meta-analysis of clinical trials.
