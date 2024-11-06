@@ -100,4 +100,4 @@ lincom bx + bx_zi2 , eform cformat(%3.2f)
 
 ```
 
-In this example, we have shown how to use `mi impute cqi` to impute systematically missing effect modifiers in an IPD meta-analysis of clinical trials.
+In this example, we have shown how to use `mi impute cqi` to impute systematically missing effect modifiers in an IPD meta-analysis of clinical trials. We can improve the generalisbility of the study findings and increase the precision of the point estimate by including an additonal three trials in the IPD meta-analysis.
