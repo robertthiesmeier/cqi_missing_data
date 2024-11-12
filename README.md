@@ -1,6 +1,6 @@
 # Imputation of systematically missing variables
 
-This repository includes the Stata code to illustrate the use of conditional quantile imputation (CQI) as described in the manuscript: "Multiple imputation for systematically missing effect modifiers in individual participant data meta-analysis" by Thiesmeier R, Hofer SM, Orsini N (2024). The Stata code uses the publicly available individual participant [data set](http://fmwww.bc.edu/repec/bocode/i/ipdmetan_example.dta), describing the effect of postoperative radiotherapy on survival at different stages of the disease. The CQI package described and used in the manuscript is available for Stata 18. A log log-file of the example demonstrating the use of CQI is available [here](https://robertthiesmeier.github.io/cqi_missing_data/applied_example_cqi.html). In addition, the Data Generating Mechanism, as described in detail in the manuscript can be found in the [here](dgm.do).
+This repository includes the Stata code to illustrate the use of conditional quantile imputation (CQI) as described in the manuscript: "Multiple imputation for systematically missing effect modifiers in individual participant data meta-analysis" by Thiesmeier R, Hofer SM, Orsini N (2024). The Stata code uses the publicly available individual participant [data set](http://fmwww.bc.edu/repec/bocode/i/ipdmetan_example.dta), describing the effect of postoperative radiotherapy on survival at different stages of the disease. The CQI package described and used in the manuscript is available for Stata 18. A log-file of the example demonstrating the use of CQI is available [here](https://robertthiesmeier.github.io/cqi_missing_data/applied_example_cqi.html). In addition, the Data Generating Mechanism, as described in detail in the manuscript can be found in the [here](dgm.do).
 
 ## Download `mi impute cqi` :computer:
 The Stata command can be downloaded from: 
@@ -45,7 +45,7 @@ gen x_zi2 = x*zi2
 
 ```
 
-The aim of the study is to estimate the effect of postoperative radiotherapy on survival at different stages of the disease. However, disease stage - the effect modifier - is missing in three trials. A complete case analysis (only using the trials with data on disease stage) excludes trial 1, 3, and 10.
+The aim of the IPD meta-analysis is to estimate the effect of postoperative radiotherapy on survival at different stages of the disease. However, disease stage - the effect modifier - is systematically missing in three trials. A complete case analysis (only using the trials with data on disease stage) excludes trial 1, 3, and 10.
 
 ```ruby
 
@@ -65,7 +65,8 @@ restore
 
 ```
 
-How can we add the trials with 100% missing data on disease stage in our analysis? We propose to use `mi impute cqi` to impute the missing values for disease stage.
+How can we add the trials with 100% missing data on disease stage in our analysis? 
+We can use a two-stage imputation process - `mi impute cqi` - to recover the missing values for disease stage in trial 1, 3, and 10.
 
 ```ruby
 
@@ -100,4 +101,4 @@ lincom bx + bx_zi2 , eform cformat(%3.2f)
 
 ```
 
-In this example, we have shown how to use `mi impute cqi` to impute systematically missing effect modifiers in an IPD meta-analysis of clinical trials. We can improve the generalisbility of the study findings and increase the precision of the point estimate by including an additonal three trials in the IPD meta-analysis.
+In this example, we have shown how to use `mi impute cqi` to impute systematically missing effect modifiers in an IPD meta-analysis of clinical trials. We can improve the generalisbility of the study findings and increase the precision of the point estimate by including an additonal three trials in the IPD meta-analysis. A more detailed account of the example can be found in the paper.
